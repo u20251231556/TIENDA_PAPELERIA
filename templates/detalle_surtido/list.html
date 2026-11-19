@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de entrada | Papelería{% endblock %}
+
+{% block content %}
+<h1>Entrada N.º {{ entrada.id_surtido }}</h1>
+
+
+<p>
+    Fecha:
+    {{ entrada.fecha_surtido.strftime('%d/%m/%Y %H:%M') }}
+</p>
+
+<a href="{{ url_for('surtido.listar') }}"
+    class="btn btn-secondary mb-3">
+    Volver a entradas
+</a>
+
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Presentación</th>
+                <th>Unidades por presentación</th>
+                <th>Cantidad de presentaciones</th>
+                <th>Precio de compra por presentación</th>
+                <th>Subtotal</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+
+
+        <tbody>
+            {% for registro in registros %}
+            <tr>
+                <td>{{ registro.nombre_producto }}</td>
+                <td>{{ registro.nombre_marca }}</td>
+                <td>{{ registro.tipo_presentacion|capitalize }}</td>
+                <td>{{ registro.unidades_por_presentacion }}</td>
+                <td>{{ registro.cantidad }}</td>
+                <td>
+                    $ {{ "{:,.2f}".format(registro.precio_compra) }}
+                </td>
+                <td>
+                    $ {{ "{:,.2f}".format(registro.subtotal) }}
+                </td>
+                <td>
+                    <div class="d-flex gap-2 flex-wrap">
+                        <a href="{{ url_for('detalle_surtido.editar', id_surtido=entrada.id_surtido, id=registro.id_detalle_surtido) }}"
+                        class="btn btn-warning btn-sm">
+                            Editar
+                        </a>
+
+                        <form
+                            action="{{ url_for('detalle_surtido.eliminar', id_surtido=entrada.id_surtido, id=registro.id_detalle_surtido) }}"
+                            method="post"
+                            onsubmit="return confirm('¿Eliminar este artículo y descontar sus unidades del inventario?');">
+
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                Eliminar
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="8">
+                    Esta entrada todavía no tiene artículos.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
+
+<td>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('detalle_surtido.editar', id_surtido=entrada.id_surtido, id=registro.id_detalle_surtido) }}"
+           class="btn btn-warning btn-sm">
+            Editar
+        </a>
+
+        <form
+            action="{{ url_for('detalle_surtido.eliminar', id_surtido=entrada.id_surtido, id=registro.id_detalle_surtido) }}"
+            method="post"
+            onsubmit="return confirm('¿Eliminar este artículo y descontar sus unidades del inventario?');">
+
+            <button type="submit" class="btn btn-danger btn-sm">
+                Eliminar
+            </button>
+        </form>
+    </div>
+</td>
