@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block title %}Inicio | Papelería{% endblock %}
+
+{% block content %}
+<section class="bg-white border rounded p-4 p-md-5 mb-4">
+    <h1 class="display-6 fw-bold">Bienvenidos a la papelería</h1>
+
+    <p class="lead mb-0">
+        Gestiona las ventas, las entradas de mercancía,
+        el inventario y los clientes desde un solo lugar.
+    </p>
+</section>
+
+<h2 class="h4 mb-3">¿Qué deseas hacer?</h2>
+
+{% set accesos = [
+    (
+        'Nueva venta',
+        'Selecciona un cliente, agrega artículos y registra la venta.',
+        'venta.crear',
+        'Registrar venta'
+    ),
+    (
+        'Entrada de mercancía',
+        'Registra los artículos recibidos y actualiza las existencias.',
+        'surtido.crear',
+        'Registrar entrada'
+    ),
+    (
+        'Inventario',
+        'Consulta las unidades disponibles de cada producto.',
+        'inventario.listar',
+        'Consultar inventario'
+    ),
+    (
+        'Clientes',
+        'Consulta y administra la información de los clientes.',
+        'clientes.listar',
+        'Administrar clientes'
+    )
+] %}
+
+<div class="row g-3 mb-4">
+    {% for titulo, descripcion, destino, boton in accesos %}
+    <div class="col-12 col-md-6 col-xl-3">
+        <div class="card h-100">
+            <div class="card-body d-flex flex-column">
+                <h3 class="h5 card-title">{{ titulo }}</h3>
+
+                <p class="card-text">{{ descripcion }}</p>
+
+                <a href="{{ url_for(destino) }}"
+                    class="btn btn-primary mt-auto">
+                    {{ boton }}
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<section class="mb-4">
+    <h2 class="h4 mb-3">Consultas</h2>
+
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('venta.listar') }}"
+            class="btn btn-outline-dark">
+            Consultar ventas
+        </a>
+
+        <a href="{{ url_for('surtido.listar') }}"
+            class="btn btn-outline-dark">
+            Consultar entradas
+        </a>
+    </div>
+</section>
+
+<section>
+    <h2 class="h4 mb-3">Catálogo</h2>
+
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('productos.listar') }}"
+            class="btn btn-outline-secondary">
+            Productos
+        </a>
+
+        <a href="{{ url_for('marcas.listar') }}"
+            class="btn btn-outline-secondary">
+            Marcas
+        </a>
+
+        <a href="{{ url_for('presentaciones.listar') }}"
+            class="btn btn-outline-secondary">
+            Presentaciones
+        </a>
+    </div>
+</section>
+{% endblock %}
