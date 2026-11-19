@@ -1,0 +1,321 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva venta | Papelería{% endblock %}
+
+{% block content %}
+<h1>Nueva venta</h1>
+
+{% for error in errores %}
+<div class="alert alert-danger" role="alert">
+    {{ error }}
+</div>
+{% endfor %}
+
+{% if not presentaciones %}
+<div class="alert alert-warning" role="alert">
+    No hay presentaciones registradas para vender.
+</div>
+{% endif %}
+
+<form method="post" id="formulario-venta">
+    <div class="mb-3">
+        <label for="fecha_venta" class="form-label">
+            Fecha y hora
+        </label>
+
+        <input
+            type="datetime-local"
+            class="form-control"
+            id="fecha_venta"
+            name="fecha_venta"
+            value="{{ item.fecha_venta }}"
+            step="1"
+            required>
+    </div>
+
+    <div class="mb-3">
+        <label for="id_cliente" class="form-label">
+            Cliente
+        </label>
+
+        <select
+            class="form-select"
+            id="id_cliente"
+            name="id_cliente">
+            <option value="">
+                Venta de mostrador — sin cliente registrado
+            </option>
+
+            {% for cliente in clientes %}
+            <option
+                value="{{ cliente.id_cliente }}"
+                {% if item.id_cliente|string == cliente.id_cliente|string %}
+                    selected
+                {% endif %}>
+                {{ cliente.nombre_cliente }}
+                — {{ cliente.identificacion }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <h2>Artículos</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Producto y presentación</th>
+                    <th>Cantidad</th>
+                    <th>Precio por presentación</th>
+                    <th>Subtotal</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody id="filas-venta">
+                {% set filas = articulos if articulos else [{
+                    'id_presentacion': '',
+                    'cantidad': '1'
+                }] %}
+
+                {% for articulo in filas %}
+                <tr class="fila-articulo">
+                    <td>
+                        <select
+                            class="form-select"
+                            name="id_presentacion"
+                            aria-label="Producto y presentación"
+                            required>
+                            <option value="">
+                                Seleccione una presentación
+                            </option>
+
+                            {% for presentacion in presentaciones %}
+                            <option
+                                value="{{ presentacion.id_presentacion }}"
+                                data-precio="{{ presentacion.precio_venta }}"
+                                data-stock="{{ presentacion.unidades_disponibles }}"
+                                data-unidades="{{ presentacion.unidades_por_presentacion }}"
+                                data-tipo="{{ presentacion.tipo_presentacion }}"
+                                {% if articulo.id_presentacion|string == presentacion.id_presentacion|string %}
+                                    selected
+                                {% endif %}>
+                                {{ presentacion.nombre_producto }}
+                                — {{ presentacion.nombre_marca }}
+                                — {{ presentacion.tipo_presentacion|capitalize }}
+                                de {{ presentacion.unidades_por_presentacion }}
+                            </option>
+                            {% endfor %}
+                        </select>
+
+                        <div class="form-text" data-existencias></div>
+                    </td>
+
+                    <td>
+                        <input
+                            type="number"
+                            class="form-control"
+                            name="cantidad"
+                            aria-label="Cantidad de presentaciones"
+                            value="{{ articulo.cantidad }}"
+                            min="1"
+                            max="2147483647"
+                            step="1"
+                            required>
+
+                        <div class="form-text" data-tipo-cantidad></div>
+                    </td>
+
+                    <td class="text-nowrap">
+                        <output data-precio>$ 0,00</output>
+                    </td>
+
+                    <td class="text-nowrap">
+                        <output data-subtotal>$ 0,00</output>
+                    </td>
+
+                    <td>
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger"
+                            data-quitar>
+                            Quitar
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <button
+        type="button"
+        class="btn btn-outline-primary mb-3"
+        id="agregar-articulo"
+        {% if not presentaciones %}disabled{% endif %}>
+        Agregar artículo
+    </button>
+
+    <p class="fs-4">
+        <strong>
+            Total:
+            <output id="total-venta" aria-live="polite">$ 0,00</output>
+        </strong>
+    </p>
+
+    <div class="d-flex gap-2">
+        <button
+            type="submit"
+            class="btn btn-primary"
+            id="guardar-venta"
+            {% if not presentaciones %}disabled{% endif %}>
+            Guardar venta
+        </button>
+
+        <a href="{{ url_for('venta.listar') }}"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+    </div>
+</form>
+
+<script>
+    const cuerpo = document.getElementById("filas-venta");
+    const agregar = document.getElementById("agregar-articulo");
+    const totalVenta = document.getElementById("total-venta");
+    const formulario = document.getElementById("formulario-venta");
+    const guardar = document.getElementById("guardar-venta");
+
+    function convertirACentavos(texto) {
+        const partes = /^(\d+)(?:\.(\d{1,2}))?$/.exec(texto);
+
+        if (!partes) {
+            return 0n;
+        }
+
+        const pesos = BigInt(partes[1]);
+        const centavos = BigInt((partes[2] || "").padEnd(2, "0"));
+
+        return pesos * 100n + centavos;
+    }
+
+    function formatoPesos(centavos) {
+        const pesos = centavos / 100n;
+        const decimales = (centavos % 100n).toString().padStart(2, "0");
+
+        return "$ " + pesos.toLocaleString("es-CO") + "," + decimales;
+    }
+
+    function actualizar() {
+        let total = 0n;
+        const filas = cuerpo.querySelectorAll(".fila-articulo");
+
+        filas.forEach(fila => {
+            const selector = fila.querySelector('[name="id_presentacion"]');
+            const opcion = selector.options[selector.selectedIndex];
+            const campoCantidad = fila.querySelector('[name="cantidad"]');
+            const aviso = fila.querySelector("[data-existencias]");
+            const tipoCantidad = fila.querySelector("[data-tipo-cantidad]");
+
+            const precio = convertirACentavos(
+                opcion?.dataset.precio || "0"
+            );
+
+            const cantidad = /^[0-9]{1,10}$/.test(campoCantidad.value)
+                ? BigInt(campoCantidad.value)
+                : 0n;
+
+            const subtotal = precio * cantidad;
+
+            fila.querySelector("output[data-precio]").textContent =
+                formatoPesos(precio);
+
+            fila.querySelector("output[data-subtotal]").textContent =
+                formatoPesos(subtotal);
+
+            if (selector.value) {
+                const stock = Number(opcion.dataset.stock);
+                const unidadesPorPresentacion =
+                    Number(opcion.dataset.unidades);
+
+                const disponibles = Math.floor(
+                    stock / unidadesPorPresentacion
+                );
+
+                const sobrantes = stock % unidadesPorPresentacion;
+
+                if (opcion.dataset.tipo === "caja") {
+                    aviso.textContent =
+                        "Disponibles: " + disponibles + " caja(s)";
+
+                    if (sobrantes > 0) {
+                        aviso.textContent +=
+                            " y " + sobrantes + " unidad(es) suelta(s)";
+                    }
+
+                    tipoCantidad.textContent = "Cantidad de cajas";
+                } else {
+                    aviso.textContent =
+                        "Disponibles: " + disponibles + " unidad(es)";
+
+                    tipoCantidad.textContent = "Cantidad de unidades";
+                }
+            } else {
+                aviso.textContent = "";
+                tipoCantidad.textContent = "";
+            }
+
+            fila.querySelector("[data-quitar]").disabled =
+                filas.length === 1;
+
+            total += subtotal;
+        });
+
+        totalVenta.textContent = formatoPesos(total);
+    }
+
+    agregar.addEventListener("click", () => {
+        const primeraFila = cuerpo.querySelector(".fila-articulo");
+        const nuevaFila = primeraFila.cloneNode(true);
+
+        nuevaFila.querySelector('[name="id_presentacion"]').value = "";
+        nuevaFila.querySelector('[name="cantidad"]').value = "1";
+
+        cuerpo.appendChild(nuevaFila);
+        actualizar();
+        nuevaFila.querySelector("select").focus();
+    });
+
+    cuerpo.addEventListener("click", evento => {
+        const boton = evento.target.closest("[data-quitar]");
+
+        if (!boton) {
+            return;
+        }
+
+        if (cuerpo.querySelectorAll(".fila-articulo").length > 1) {
+            boton.closest(".fila-articulo").remove();
+            actualizar();
+        }
+    });
+
+    cuerpo.addEventListener("input", actualizar);
+    cuerpo.addEventListener("change", actualizar);
+
+    formulario.addEventListener("submit", () => {
+        guardar.disabled = true;
+        guardar.textContent = "Guardando...";
+    });
+
+    window.addEventListener("pageshow", evento => {
+        if (evento.persisted) {
+            guardar.disabled = agregar.disabled;
+            guardar.textContent = "Guardar venta";
+            actualizar();
+        }
+    });
+
+    actualizar();
+</script>
+{% endblock %}
