@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+
+
+{% block title %}{{ titulo }} | Papelería{% endblock %}
+
+
+{% block content %}
+<h1>{{ titulo }}</h1>
+
+
+{% for error in errores %}
+<div class="alert alert-danger" role="alert">
+    {{ error }}
+</div>
+{% endfor %}
+
+
+<form method="post">
+    <div class="mb-3">
+        <label for="id_producto" class="form-label">
+            Producto
+        </label>
+
+
+        <select
+            class="form-select"
+            id="id_producto"
+            name="id_producto"
+            required>
+            <option value="">Seleccione un producto</option>
+
+
+            {% for producto in productos %}
+            <option
+                value="{{ producto.id_producto }}"
+                {% if item.id_producto|string == producto.id_producto|string %}
+                    selected
+                {% endif %}>
+                {{ producto.nombre_producto }} — {{ producto.nombre_marca }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+    <div class="mb-3">
+        <label for="tipo_presentacion" class="form-label">
+            Tipo de presentación
+        </label>
+
+
+        <select
+            class="form-select"
+            id="tipo_presentacion"
+            name="tipo_presentacion"
+            required>
+            <option value="unidad"
+                    {% if item.tipo_presentacion == 'unidad' %}selected{% endif %}>
+                Unidad
+            </option>
+            <option value="caja"
+                    {% if item.tipo_presentacion == 'caja' %}selected{% endif %}>
+                Caja
+            </option>
+        </select>
+    </div>
+
+
+    <div class="mb-3">
+        <label for="unidades_por_presentacion" class="form-label">
+            Unidades que contiene
+        </label>
+
+
+        <input
+            type="number"
+            class="form-control"
+            id="unidades_por_presentacion"
+            name="unidades_por_presentacion"
+            value="{{ item.unidades_por_presentacion }}"
+            min="1"
+            max="2147483647"
+            step="1"
+            required>
+
+
+        <div class="form-text">
+            Para unidad, indique 1. Para caja, indique cuántas unidades contiene.
+        </div>
+    </div>
+
+
+    <div class="mb-3">
+        <label for="precio_venta" class="form-label">
+            Precio de venta de la presentación (COP)
+        </label>
+
+
+        <input
+            type="number"
+            class="form-control"
+            id="precio_venta"
+            name="precio_venta"
+            value="{{ item.precio_venta }}"
+            min="0"
+            max="9999999999.99"
+            step="0.01"
+            required>
+
+
+        <div class="form-text">
+            Si selecciona caja, escriba el precio de la caja completa.
+        </div>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary">
+        Guardar
+    </button>
+
+
+    <a href="{{ url_for('presentaciones.listar') }}"
+            class="btn btn-secondary">
+        Cancelar
+    </a>
+</form>
+{% endblock %}
