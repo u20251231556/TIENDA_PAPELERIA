@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+
+{% block title %}
+    {{ titulo|default('Nuevo producto') }} | Papelería
+{% endblock %}
+
+
+{% block content %}
+<h1>{{ titulo|default('Nuevo producto') }}</h1>
+
+
+{% for error in errores %}
+<div class="alert alert-danger" role="alert">
+    {{ error }}
+</div>
+{% endfor %}
+
+
+<form method="post">
+    <div class="mb-3">
+        <label for="nombre_producto" class="form-label">
+            Nombre del producto
+        </label>
+
+
+        <input
+            type="text"
+            class="form-control"
+            id="nombre_producto"
+            name="nombre_producto"
+            value="{{ item.nombre_producto }}"
+            maxlength="100"
+            required>
+    </div>
+
+
+    <div class="mb-3">
+        <label for="id_marca" class="form-label">
+            Marca
+        </label>
+
+
+        <select
+            class="form-select"
+            id="id_marca"
+            name="id_marca"
+            required>
+            <option value="">Seleccione una marca</option>
+
+
+            {% for marca in marcas %}
+            <option
+                value="{{ marca.id_marca }}"
+                {% if item.id_marca|string == marca.id_marca|string %}
+                    selected
+                {% endif %}>
+                {{ marca.nombre_marca }}
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+
+    <button type="submit" class="btn btn-primary">
+        Guardar
+    </button>
+
+
+    <a href="{{ url_for('productos.listar') }}"
+      class="btn btn-secondary">
+        Cancelar
+    </a>
+</form>
+{% endblock %}
