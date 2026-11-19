@@ -1,0 +1,91 @@
+{% extends "base.html" %}
+
+{% block title %}Editar artículo | Papelería{% endblock %}
+
+{% block content %}
+<h1>Editar artículo — Entrada N.º {{ entrada.id_surtido }}</h1>
+
+{% for error in errores %}
+<div class="alert alert-danger" role="alert">
+    {{ error }}
+</div>
+{% endfor %}
+
+<form method="post">
+    <div class="mb-3">
+        <label for="id_presentacion" class="form-label">
+            Producto y presentación
+        </label>
+
+        <select
+            class="form-select"
+            id="id_presentacion"
+            name="id_presentacion"
+            disabled>
+            {% for presentacion in presentaciones %}
+            <option
+                value="{{ presentacion.id_presentacion }}"
+                {% if item.id_presentacion|string == presentacion.id_presentacion|string %}
+                    selected
+                {% endif %}>
+                {{ presentacion.nombre_producto }}
+                — {{ presentacion.nombre_marca }}
+                — {{ presentacion.tipo_presentacion|capitalize }}
+                de {{ presentacion.unidades_por_presentacion }} unidad(es)
+            </option>
+            {% endfor %}
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label for="cantidad" class="form-label">
+            Cantidad de presentaciones recibidas
+        </label>
+
+        <input
+            type="number"
+            class="form-control"
+            id="cantidad"
+            name="cantidad"
+            value="{{ item.cantidad }}"
+            min="1"
+            max="2147483647"
+            step="1"
+            required>
+
+        <div class="form-text">
+            Escriba la cantidad recibida. Por ejemplo, para 2 cajas, escriba 2.
+        </div>
+    </div>
+
+    <div class="mb-3">
+        <label for="precio_compra" class="form-label">
+            Precio de compra por presentación (COP)
+        </label>
+
+        <input
+            type="number"
+            class="form-control"
+            id="precio_compra"
+            name="precio_compra"
+            value="{{ item.precio_compra }}"
+            min="0"
+            max="9999999999.99"
+            step="0.01"
+            required>
+
+        <div class="form-text">
+            Si seleccionó una caja, escriba cuánto costó cada caja.
+        </div>
+    </div>
+
+    <button type="submit" class="btn btn-primary">
+        Guardar cambios
+    </button>
+
+    <a href="{{ url_for('detalle_surtido.listar', id_surtido=entrada.id_surtido) }}"
+       class="btn btn-secondary">
+        Cancelar
+    </a>
+</form>
+{% endblock %}
