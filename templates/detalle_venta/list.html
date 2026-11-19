@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+
+{% block title %}Detalle de venta | Papelería{% endblock %}
+
+{% block content %}
+<h1>Venta N.º {{ venta.id_venta }}</h1>
+
+<p>
+    <strong>Fecha:</strong>
+    {{ venta.fecha_venta.strftime('%d/%m/%Y %H:%M') }}
+</p>
+
+<p>
+    <strong>Cliente:</strong>
+    {{ venta.nombre_cliente }}
+</p>
+
+{% if venta.identificacion %}
+<p>
+    <strong>Identificación:</strong>
+    {{ venta.identificacion }}
+</p>
+{% endif %}
+
+<a href="{{ url_for('venta.listar') }}"
+   class="btn btn-secondary mb-3">
+    Volver a ventas
+</a>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Presentación</th>
+                <th>Unidades por presentación</th>
+                <th>Cantidad vendida</th>
+                <th>Precio por presentación</th>
+                <th>Subtotal</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for registro in registros %}
+            <tr>
+                <td>{{ registro.nombre_producto }}</td>
+                <td>{{ registro.nombre_marca }}</td>
+                <td>{{ registro.tipo_presentacion|capitalize }}</td>
+                <td>{{ registro.unidades_por_presentacion }}</td>
+                <td>{{ registro.cantidad }}</td>
+
+                <td class="text-nowrap">
+                    $ {{ "{:,.2f}".format(registro.precio_unitario) }}
+                </td>
+
+                <td class="text-nowrap">
+                    $ {{ "{:,.2f}".format(registro.subtotal) }}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="7">
+                    Esta venta no tiene artículos registrados.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+
+        <tfoot>
+            <tr>
+                <th colspan="6" class="text-end">Total</th>
+                <td class="text-nowrap">
+                    <strong>
+                        $ {{ "{:,.2f}".format(total) }}
+                    </strong>
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+</div>
+{% endblock %}
