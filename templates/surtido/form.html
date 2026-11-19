@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% block title %}Nueva entrada | Papelería{% endblock %}
+
+{% block content %}
+<h1>Nueva entrada de mercancía</h1>
+
+{% for error in errores %}
+<div class="alert alert-danger" role="alert">
+    {{ error }}
+</div>
+{% endfor %}
+
+{% if not presentaciones %}
+<div class="alert alert-warning" role="alert">
+    Primero deben registrar productos y sus presentaciones.
+</div>
+{% endif %}
+
+<form method="post" id="formulario-surtido">
+    <div class="mb-3">
+        <label for="fecha_surtido" class="form-label">
+            Fecha y hora
+        </label>
+
+        <input
+            type="datetime-local"
+            class="form-control"
+            id="fecha_surtido"
+            name="fecha_surtido"
+            value="{{ fecha }}"
+            step="1"
+            required>
+    </div>
+
+    <h2>Artículos recibidos</h2>
+
+    <div class="table-responsive">
+        <table class="table table-bordered align-middle">
+            <thead>
+                <tr>
+                    <th>Producto y presentación</th>
+                    <th>Cantidad recibida</th>
+                    <th>Precio de compra por presentación (COP)</th>
+                    <th>Acciones</th>
+                </tr>
+            </thead>
+
+            <tbody id="filas-articulos">
+                {% set filas = articulos if articulos else [{
+                    'id_presentacion': '',
+                    'cantidad': '1',
+                    'precio_compra': ''
+                }] %}
+
+                {% for articulo in filas %}
+                <tr class="fila-articulo">
+                    <td>
+                        <select
+                            class="form-select"
+                            name="id_presentacion"
+                            aria-label="Producto y presentación"
+                            required>
+                            <option value="">
+                                Seleccione una presentación
+                            </option>
+
+                            {% for presentacion in presentaciones %}
+                            <option
+                                value="{{ presentacion.id_presentacion }}"
+                                {% if articulo.id_presentacion|string == presentacion.id_presentacion|string %}
+                                    selected
+                                {% endif %}>
+                                {{ presentacion.nombre_producto }}
+                                — {{ presentacion.nombre_marca }}
+                                — {{ presentacion.tipo_presentacion|capitalize }}
+                                de {{ presentacion.unidades_por_presentacion }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </td>
+
+                    <td>
+                        <input
+                            type="number"
+                            class="form-control"
+                            name="cantidad"
+                            aria-label="Cantidad de presentaciones recibidas"
+                            value="{{ articulo.cantidad }}"
+                            min="1"
+                            max="2147483647"
+                            step="1"
+                            required>
+                    </td>
+
+                    <td>
+                        <input
+                            type="number"
+                            class="form-control"
+                            name="precio_compra"
+                            aria-label="Precio de compra por presentación"
+                            value="{{ articulo.precio_compra }}"
+                            min="0"
+                            max="9999999999.99"
+                            step="0.01"
+                            required>
+                    </td>
+
+                    <td>
+                        <button
+                            type="button"
+                            class="btn btn-outline-danger"
+                            data-quitar>
+                            Quitar
+                        </button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <button
+        type="button"
+        class="btn btn-outline-primary mb-3"
+        id="agregar-fila"
+        {% if not presentaciones %}disabled{% endif %}>
+        Agregar artículo
+    </button>
+
+    <div class="d-flex gap-2">
+        <button
+            type="submit"
+            class="btn btn-primary"
+            id="guardar-entrada"
+            {% if not presentaciones %}disabled{% endif %}>
+            Guardar entrada
+        </button>
+
+        <a href="{{ url_for('surtido.listar') }}"
+           class="btn btn-secondary">
+            Cancelar
+        </a>
+    </div>
+</form>
+
+<script>
+    const cuerpo = document.getElementById("filas-articulos");
+    const agregar = document.getElementById("agregar-fila");
+    const formulario = document.getElementById("formulario-surtido");
+    const guardar = document.getElementById("guardar-entrada");
+
+    function actualizarBotones() {
+        const filas = cuerpo.querySelectorAll(".fila-articulo");
+
+        filas.forEach(fila => {
+            fila.querySelector("[data-quitar]").disabled =
+                filas.length === 1;
+        });
+    }
+
+    agregar.addEventListener("click", () => {
+        const primeraFila = cuerpo.querySelector(".fila-articulo");
+        const nuevaFila = primeraFila.cloneNode(true);
+
+        nuevaFila.querySelector('[name="id_presentacion"]').value = "";
+        nuevaFila.querySelector('[name="cantidad"]').value = "1";
+        nuevaFila.querySelector('[name="precio_compra"]').value = "";
+
+        cuerpo.appendChild(nuevaFila);
+        actualizarBotones();
+        nuevaFila.querySelector("select").focus();
+    });
+
+    cuerpo.addEventListener("click", evento => {
+        const boton = evento.target.closest("[data-quitar]");
+
+        if (!boton) {
+            return;
+        }
+
+        if (cuerpo.querySelectorAll(".fila-articulo").length > 1) {
+            boton.closest(".fila-articulo").remove();
+            actualizarBotones();
+        }
+    });
+
+    formulario.addEventListener("submit", () => {
+        guardar.disabled = true;
+        guardar.textContent = "Guardando...";
+    });
+
+    actualizarBotones();
+</script>
+{% endblock %}

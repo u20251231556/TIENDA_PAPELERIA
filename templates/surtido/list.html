@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+
+
+{% block title %}Surtido | Papelería{% endblock %}
+
+
+{% block content %}
+<h1>Entradas de mercancía</h1>
+
+
+<a href="{{ url_for('surtido.crear') }}"
+    class="btn btn-primary mb-3">
+    Nueva entrada
+</a>
+
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Fecha y hora</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+
+<tbody>
+    {% for registro in surtido %}
+    <tr>
+        <td>{{ registro.id_surtido }}</td>
+
+
+        <td>
+            {{ registro.fecha_surtido.strftime('%d/%m/%Y %H:%M') }}
+        </td>
+
+
+        <td>
+            <div class="d-flex gap-2 flex-wrap">
+                <a href="{{ url_for('detalle_surtido.listar', id_surtido=registro.id_surtido) }}"
+                    class="btn btn-info btn-sm">
+                    Ver detalle
+                </a>
+
+
+                <form
+                    action="{{ url_for('surtido.eliminar', id=registro.id_surtido) }}"
+                    method="post"
+                    onsubmit="return confirm('¿Eliminar esta entrada completa y descontar su mercancía del inventario?');">
+
+
+                    <button type="submit" class="btn btn-danger btn-sm">
+                        Eliminar
+                    </button>
+                </form>
+            </div>
+        </td>
+    </tr>
+    {% else %}
+    <tr>
+        <td colspan="3">
+            Todavía no hay entradas de mercancía registradas.
+        </td>
+    </tr>
+    {% endfor %}
+</tbody>
+</table>
+{% endblock %}
