@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+
+{% block title %}Productos | Papelería{% endblock %}
+
+
+{% block content %}
+<h1>Productos de la papelería</h1>
+
+
+  <a href="{{ url_for('productos.crear') }}" class="btn btn-primary mb-3">
+    Nuevo producto
+  </a>
+
+
+<table class="table table-bordered table-striped">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Marca</th>
+            <th>Acciones</th>
+        </tr>
+    </thead>
+
+
+    <tbody>
+        {% for producto in productos %}
+        <tr>
+            <td>{{ producto.id_producto }}</td>
+            <td>{{ producto.nombre_producto }}</td>
+            <td>{{ producto.nombre_marca }}</td>
+            <td>
+    <div class="d-flex gap-2 flex-wrap">
+        <a href="{{ url_for('productos.editar', id=producto.id_producto) }}"
+           class="btn btn-warning btn-sm">
+            Editar
+        </a>
+
+        <form
+            action="{{ url_for('productos.eliminar', id=producto.id_producto) }}"
+            method="post"
+            onsubmit="return confirm('¿Desea eliminar este producto?');">
+
+            <button type="submit" class="btn btn-danger btn-sm">
+                Eliminar
+            </button>
+        </form>
+    </div>
+</td>
+
+           
+        </tr>
+        {% else %}
+        <tr>
+            <td colspan="4">
+                Todavía no hay productos registrados.
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}
