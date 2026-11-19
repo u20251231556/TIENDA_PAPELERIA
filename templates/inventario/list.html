@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Inventario | Papelería{% endblock %}
+
+{% block content %}
+<h1>Inventario</h1>
+
+<p>Existencias expresadas en unidades individuales.</p>
+
+<div class="table-responsive">
+    <table class="table table-bordered table-striped">
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Producto</th>
+                <th>Marca</th>
+                <th>Unidades disponibles</th>
+            </tr>
+        </thead>
+
+        <tbody>
+            {% for registro in registros %}
+            <tr>
+                <td>{{ registro.id_inventario }}</td>
+                <td>{{ registro.nombre_producto }}</td>
+                <td>{{ registro.nombre_marca }}</td>
+                <td>
+                    {% if registro.cantidad_disponible == 0 %}
+                        <span class="badge bg-danger">Agotado: 0</span>
+                    {% else %}
+                        {{ registro.cantidad_disponible }}
+                    {% endif %}
+                </td>
+            </tr>
+            {% else %}
+            <tr>
+                <td colspan="4">
+                    Todavía no hay registros de inventario.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}
