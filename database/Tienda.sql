@@ -2,10 +2,15 @@
 CREATE TABLE cliente (
     id_cliente SERIAL PRIMARY KEY,
     nombre_cliente VARCHAR(100) NOT NULL,
-    telefono VARCHAR(20),
+    telefono BIGINT,
     correo_electronico VARCHAR(100) UNIQUE,
-    identificacion VARCHAR(30) NOT NULL UNIQUE
-    CHECK (TRIM(identificacion) <> '')
+    identificacion BIGINT NOT NULL UNIQUE,
+    
+    CONSTRAINT chk_cliente_identificacion_positiva
+        CHECK (identificacion > 0),
+
+    CONSTRAINT chk_cliente_telefono_positivo
+        CHECK (telefono > 0)
     );
 
 
@@ -157,4 +162,10 @@ CREATE TABLE detalle_surtido (
 
     CONSTRAINT chk_precio_compra
         CHECK (precio_compra >= 0)
+);
+
+CREATE UNIQUE INDEX uq_producto_nombre_marca
+ON producto (
+    id_marca,
+    UPPER(TRIM(nombre_producto))
 );
