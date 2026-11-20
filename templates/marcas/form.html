@@ -1,15 +1,11 @@
-
 {% extends "base.html" %}
-
 
 {% block title %}
     {{ titulo|default('Nueva marca') }} | Papelería
 {% endblock %}
 
-
 {% block content %}
 <h1>{{ titulo|default('Nueva marca') }}</h1>
-
 
 {% for error in errores %}
 <div class="alert alert-danger" role="alert">
@@ -17,13 +13,11 @@
 </div>
 {% endfor %}
 
-
 <form method="post">
     <div class="mb-3">
         <label for="nombre_marca" class="form-label">
             Nombre de la marca
         </label>
-
 
         <input
             type="text"
@@ -35,11 +29,9 @@
             required>
     </div>
 
-
     <button type="submit" class="btn btn-primary">
         Guardar
     </button>
-
 
     <a href="{{ url_for('marcas.listar') }}"
         class="btn btn-secondary">

@@ -1,12 +1,9 @@
 {% extends "base.html" %}
 
-
 {% block title %}{{ titulo }} | Papelería{% endblock %}
-
 
 {% block content %}
 <h1>{{ titulo }}</h1>
-
 
 {% for error in errores %}
 <div class="alert alert-danger" role="alert">
@@ -14,13 +11,11 @@
 </div>
 {% endfor %}
 
-
 <form method="post">
     <div class="mb-3">
         <label for="id_producto" class="form-label">
             Producto
         </label>
-
 
         <select
             class="form-select"
@@ -28,7 +23,6 @@
             name="id_producto"
             required>
             <option value="">Seleccione un producto</option>
-
 
             {% for producto in productos %}
             <option
@@ -42,12 +36,10 @@
         </select>
     </div>
 
-
     <div class="mb-3">
         <label for="tipo_presentacion" class="form-label">
             Tipo de presentación
         </label>
-
 
         <select
             class="form-select"
@@ -65,12 +57,10 @@
         </select>
     </div>
 
-
     <div class="mb-3">
         <label for="unidades_por_presentacion" class="form-label">
             Unidades que contiene
         </label>
-
 
         <input
             type="number"
@@ -83,18 +73,15 @@
             step="1"
             required>
 
-
         <div class="form-text">
             Para unidad, indique 1. Para caja, indique cuántas unidades contiene.
         </div>
     </div>
 
-
     <div class="mb-3">
         <label for="precio_venta" class="form-label">
             Precio de venta de la presentación (COP)
         </label>
-
 
         <input
             type="number"
@@ -107,17 +94,14 @@
             step="0.01"
             required>
 
-
         <div class="form-text">
             Si selecciona caja, escriba el precio de la caja completa.
         </div>
     </div>
 
-
     <button type="submit" class="btn btn-primary">
         Guardar
     </button>
-
 
     <a href="{{ url_for('presentaciones.listar') }}"
             class="btn btn-secondary">

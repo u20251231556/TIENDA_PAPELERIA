@@ -1,19 +1,15 @@
 {% extends "base.html" %}
 
-
 {% block title %}{{ titulo }} | Papelería{% endblock %}
-
 
 {% block content %}
 <h1>{{ titulo }}</h1>
-
 
 {% for error in errores %}
 <div class="alert alert-danger" role="alert">
     {{ error }}
 </div>
 {% endfor %}
-
 
 <form method="post">
     <div class="mb-3">
@@ -30,7 +26,6 @@
             required>
     </div>
 
-
     <div class="mb-3">
         <label for="identificacion" class="form-label">
             Identificación
@@ -44,7 +39,6 @@
             maxlength="30"
             required>
     </div>
-
 
     <div class="mb-3">
         <label for="telefono" class="form-label">
@@ -60,13 +54,11 @@
             maxlength="16"
             aria-describedby="ayuda_telefono">
 
-
         <div id="ayuda_telefono" class="form-text">
             De 7 a 15 dígitos, sin espacios ni guiones.
             Puede comenzar con +.
         </div>
     </div>
-
 
     <div class="mb-3">
         <label for="correo_electronico" class="form-label">
@@ -81,11 +73,9 @@
             maxlength="100">
     </div>
 
-
     <button type="submit" class="btn btn-primary">
         Guardar
     </button>
-
 
     <a href="{{ url_for('clientes.listar') }}"
         class="btn btn-secondary">
