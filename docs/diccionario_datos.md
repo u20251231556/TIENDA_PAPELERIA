@@ -71,9 +71,9 @@ Guarda la identificación y los datos de contacto de los clientes.
 |---|---|---|---|
 | `id_cliente` | SERIAL | PK, NOT NULL | Identificador interno del cliente. Se genera automáticamente. |
 | `nombre_cliente` | VARCHAR(100) | NOT NULL | Nombre del cliente. |
-| `telefono` | BIGINT | Permite NULL; no es UNIQUE | Teléfono de contacto. Puede compartirse entre clientes. |
+| `telefono` | BIGINT | Permite NULL; no es UNIQUE; CHECK: mayor que 0 | Teléfono de contacto. Puede compartirse entre clientes. |
 | `correo_electronico` | VARCHAR(100) | UNIQUE, permite NULL | Correo opcional. Los valores registrados no pueden repetirse. |
-| `identificacion` | BIGINT | NOT NULL, UNIQUE | Documento o identificación numérica del cliente. No puede quedar nula y no se puede repetir. |
+| `identificacion` | BIGINT | NOT NULL, UNIQUE, CHECK: mayor que 0 | Documento numérico del cliente. Es obligatorio, debe ser positivo y no puede repetirse. |
 
 El teléfono y la identificación se guardan como valores numéricos de tipo `BIGINT`. `id_cliente` es el número interno del registro; `identificacion` corresponde al documento del cliente.
 
