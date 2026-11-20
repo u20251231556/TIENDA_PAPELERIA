@@ -35,7 +35,7 @@ def test_crear_editar_eliminar_cliente(client, app):
 
     assert len(clientes) == 1
     assert clientes[0]["nombre_cliente"] == "CLIENTE PRUEBA"
-    assert clientes[0]["identificacion"] == "10000001"
+    assert clientes[0]["identificacion"] == 10000001
 
     id_cliente = clientes[0]["id_cliente"]
 
@@ -65,7 +65,7 @@ def test_crear_editar_eliminar_cliente(client, app):
     assert len(clientes) == 1
     assert clientes[0]["id_cliente"] == id_cliente
     assert clientes[0]["nombre_cliente"] == "CLIENTE EDITADO"
-    assert clientes[0]["telefono"] == "3117654321"
+    assert clientes[0]["telefono"] == 3117654321
 
     # Eliminar.
     respuesta = client.post(
