@@ -100,7 +100,7 @@ TIENDA_PAPELERIA/
     └── test_venta.py
 ```
 
-Las validaciones están en los archivos de `routes/`. Cada módulo tiene su Blueprint y sus plantillas. `.env` y `.venv` se crean en cada computador y no se suben al repositorio.
+Las validaciones están en los archivos de `routes/`. Cada módulo tiene su Blueprint y sus plantillas. `.env` y `.venv` se crean en cada computador.
 
 ## Instalación en Windows
 
