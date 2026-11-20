@@ -1,18 +1,14 @@
 {% extends "base.html" %}
 
-
 {% block title %}Surtido | Papelería{% endblock %}
-
 
 {% block content %}
 <h1>Entradas de mercancía</h1>
-
 
 <a href="{{ url_for('surtido.crear') }}"
     class="btn btn-primary mb-3">
     Nueva entrada
 </a>
-
 
 <table class="table table-bordered table-striped">
     <thead>
@@ -23,17 +19,14 @@
         </tr>
     </thead>
 
-
 <tbody>
     {% for registro in surtido %}
     <tr>
         <td>{{ registro.id_surtido }}</td>
 
-
         <td>
             {{ registro.fecha_surtido.strftime('%d/%m/%Y %H:%M') }}
         </td>
-
 
         <td>
             <div class="d-flex gap-2 flex-wrap">
@@ -42,12 +35,10 @@
                     Ver detalle
                 </a>
 
-
                 <form
                     action="{{ url_for('surtido.eliminar', id=registro.id_surtido) }}"
                     method="post"
                     onsubmit="return confirm('¿Eliminar esta entrada completa y descontar su mercancía del inventario?');">
-
 
                     <button type="submit" class="btn btn-danger btn-sm">
                         Eliminar

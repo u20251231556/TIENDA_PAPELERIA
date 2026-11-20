@@ -23,9 +23,16 @@
 {% endif %}
 
 <a href="{{ url_for('venta.listar') }}"
-   class="btn btn-secondary mb-3">
+    class="btn btn-secondary mb-3">
     Volver a ventas
 </a>
+
+<button
+    type="button"
+    class="btn btn-primary mb-3"
+    onclick="window.print()">
+    Imprimir recibo
+</button>
 
 <div class="table-responsive">
     <table class="table table-bordered table-striped">
@@ -79,4 +86,24 @@
         </tfoot>
     </table>
 </div>
+
+<style>
+    @media print {
+        nav,
+        .btn,
+        .alert {
+            display: none !important;
+        }
+
+        body {
+            background: white !important;
+        }
+
+        main.container {
+            max-width: 100%;
+            padding: 0 !important;
+        }
+    }
+</style>
+
 {% endblock %}

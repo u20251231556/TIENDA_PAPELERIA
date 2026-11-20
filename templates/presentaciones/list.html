@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
-
 {% block title %}Presentaciones | Papelería{% endblock %}
-
 
 {% block content %}
 <h1>Presentaciones de los productos</h1>
@@ -10,7 +8,6 @@
     class="btn btn-primary mb-3">
     Nueva presentación
 </a>
-
 
 <div class="table-responsive">
     <table class="table table-bordered table-striped">
@@ -25,7 +22,6 @@
                 <th>Acciones</th>
             </tr>
         </thead>
-
 
         <tbody>
             {% for presentacion in presentaciones %}
@@ -45,12 +41,10 @@
                             Editar
                         </a>
 
-
                         <form
                             action="{{ url_for('presentaciones.eliminar', id=presentacion.id_presentacion) }}"
                             method="post"
                             onsubmit="return confirm('¿Desea eliminar esta presentación?');">
-
 
                             <button type="submit" class="btn btn-danger btn-sm">
                                 Eliminar

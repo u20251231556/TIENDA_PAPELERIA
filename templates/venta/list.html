@@ -4,6 +4,7 @@
 
 {% block content %}
 <h1>Ventas</h1>
+
 <a href="{{ url_for('venta.crear') }}"
    class="btn btn-primary mb-3">
     Nueva venta
@@ -25,34 +26,23 @@
             {% for registro in registros %}
             <tr>
                 <td>{{ registro.id_venta }}</td>
+
                 <td>
                     {{ registro.fecha_venta.strftime('%d/%m/%Y %H:%M') }}
                 </td>
+
                 <td>{{ registro.nombre_cliente }}</td>
+
                 <td class="text-nowrap">
                     $ {{ "{:,.2f}".format(registro.total) }}
                 </td>
+
                 <td>
-                    <div class="d-flex gap-2 flex-wrap">
-                        <a href="{{ url_for('detalle_venta.listar', id_venta=registro.id_venta) }}"
-                          class="btn btn-info btn-sm">
-                            Ver detalle
-                        </a>
-
-
-                        <form
-                            action="{{ url_for('venta.eliminar', id=registro.id_venta) }}"
-                            method="post"
-                            onsubmit="return confirm('¿Eliminar esta venta y devolver sus unidades al inventario?');">
-
-
-                            <button type="submit" class="btn btn-danger btn-sm">
-                                Eliminar
-                            </button>
-                        </form>
-                    </div>
+                    <a href="{{ url_for('detalle_venta.listar', id_venta=registro.id_venta) }}"
+                       class="btn btn-info btn-sm">
+                        Ver detalle
+                    </a>
                 </td>
-
             </tr>
             {% else %}
             <tr>
