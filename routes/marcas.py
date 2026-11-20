@@ -23,7 +23,6 @@ def crear():
     if request.method == "POST":
         nombre = request.form.get("nombre_marca", "").strip().upper()
 
-
         if not nombre:
             errores.append("El nombre es obligatorio.")
         elif len(nombre) > 80:
@@ -36,7 +35,6 @@ def crear():
                     (nombre,)
                 )
                 flash("Marca creada correctamente.", "success")
-
                 return redirect(url_for("marcas.listar"))
             except DatabaseError as exc:
                 errores.append(error_message(exc))
@@ -53,6 +51,7 @@ def editar(id):
         (id,),
         one=True
     )
+
     if marca is None:
         abort(404)
 

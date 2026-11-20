@@ -53,6 +53,7 @@ def listar(id_surtido):
         entrada=entrada,
         registros=registros
     )
+
 @bp.route("/<int:id_surtido>/nuevo", methods=["GET", "POST"])
 def crear(id_surtido):
     entrada = query(
@@ -192,7 +193,7 @@ def crear(id_surtido):
         JOIN producto p ON p.id_producto = pr.id_producto
         JOIN marca m ON m.id_marca = p.id_marca
         ORDER BY p.nombre_producto, m.nombre_marca,
-                 pr.unidades_por_presentacion
+                pr.unidades_por_presentacion
     """)
 
     return render_template(
@@ -220,7 +221,7 @@ def eliminar(id_surtido, id):
                 JOIN presentacion pr
                     ON pr.id_presentacion = d.id_presentacion
                 WHERE d.id_detalle_surtido = %s
-                  AND d.id_surtido = %s
+                AND d.id_surtido = %s
                 FOR UPDATE OF d
                 FOR SHARE OF pr
                 """,
@@ -240,7 +241,7 @@ def eliminar(id_surtido, id):
                 UPDATE inventario
                 SET cantidad_disponible = cantidad_disponible - %s
                 WHERE id_producto = %s
-                  AND cantidad_disponible >= %s
+                AND cantidad_disponible >= %s
                 RETURNING id_inventario
                 """,
                 (unidades, id_producto, unidades)
@@ -256,7 +257,7 @@ def eliminar(id_surtido, id):
                 """
                 DELETE FROM detalle_surtido
                 WHERE id_detalle_surtido = %s
-                  AND id_surtido = %s
+                AND id_surtido = %s
                 """,
                 (id, id_surtido)
             )
@@ -272,6 +273,7 @@ def eliminar(id_surtido, id):
         "detalle_surtido.listar",
         id_surtido=id_surtido
     ))
+
 @bp.route(
     "/<int:id_surtido>/<int:id>/editar",
     methods=["GET", "POST"]
@@ -291,7 +293,7 @@ def editar(id_surtido, id):
         SELECT *
         FROM detalle_surtido
         WHERE id_detalle_surtido = %s
-          AND id_surtido = %s
+        AND id_surtido = %s
         """,
         (id, id_surtido),
         one=True
@@ -345,7 +347,7 @@ def editar(id_surtido, id):
                         JOIN presentacion pr
                             ON pr.id_presentacion = d.id_presentacion
                         WHERE d.id_detalle_surtido = %s
-                          AND d.id_surtido = %s
+                        AND d.id_surtido = %s
                         FOR UPDATE OF d
                         FOR SHARE OF pr
                         """,
@@ -369,8 +371,8 @@ def editar(id_surtido, id):
                             SET cantidad_disponible =
                                 cantidad_disponible::bigint + %s
                             WHERE id_producto = %s
-                              AND cantidad_disponible::bigint + %s
-                                  BETWEEN 0 AND 2147483647
+                            AND cantidad_disponible::bigint + %s
+                            BETWEEN 0 AND 2147483647
                             RETURNING id_inventario
                             """,
                             (diferencia, id_producto, diferencia)
@@ -389,7 +391,7 @@ def editar(id_surtido, id):
                         SET cantidad = %s,
                             precio_compra = %s
                         WHERE id_detalle_surtido = %s
-                          AND id_surtido = %s
+                        AND id_surtido = %s
                         """,
                         (cantidad, precio, id, id_surtido)
                     )

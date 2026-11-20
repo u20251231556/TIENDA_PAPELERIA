@@ -2,7 +2,6 @@ from decimal import Decimal
 
 from flask import Blueprint, render_template, abort
 from db import query
-
 bp = Blueprint(
     "detalle_venta",
     __name__,
@@ -68,3 +67,4 @@ def listar(id_venta):
         registros=registros,
         total=total
     )
+
