@@ -1,20 +1,19 @@
 from decimal import Decimal, InvalidOperation
 
-
 from flask import (
     Blueprint, render_template, request,
     redirect, url_for, flash, abort
 )
-from db import query, execute, DatabaseError, error_message
-
+from db import (
+    query, execute, transaction,
+    DatabaseError, error_message
+)
 
 bp = Blueprint(
     "presentaciones",
     __name__,
     url_prefix="/presentaciones"
 )
-
-
 
 
 def leer_formulario(formulario):
@@ -27,33 +26,26 @@ def leer_formulario(formulario):
         "precio_venta": formulario.get("precio_venta", "").strip()
     }
 
-
     errores = []
     id_producto = None
     unidades = None
     precio = None
 
-
     try:
         id_producto = int(item["id_producto"])
-
 
         if not 1 <= id_producto <= 2147483647:
             errores.append("Seleccione un producto válido.")
     except ValueError:
         errores.append("Seleccione un producto válido.")
 
-
     tipo = item["tipo_presentacion"]
-
 
     if tipo not in ("unidad", "caja"):
         errores.append("Seleccione unidad o caja.")
 
-
     try:
         unidades = int(item["unidades_por_presentacion"])
-
 
         if not 1 <= unidades <= 2147483647:
             errores.append(
@@ -68,10 +60,8 @@ def leer_formulario(formulario):
             "La cantidad de unidades debe ser un número entero."
         )
 
-
     try:
         precio = Decimal(item["precio_venta"])
-
 
         if not precio.is_finite():
             errores.append("Ingrese un precio válido.")
@@ -84,13 +74,9 @@ def leer_formulario(formulario):
     except InvalidOperation:
         errores.append("Ingrese un precio válido.")
 
-
     datos = (id_producto, tipo, unidades, precio)
 
-
     return item, datos, errores
-
-
 
 
 def mostrar_formulario(item, errores, titulo):
@@ -104,7 +90,6 @@ def mostrar_formulario(item, errores, titulo):
         ORDER BY p.nombre_producto, m.nombre_marca
     """)
 
-
     return render_template(
         "presentaciones/form.html",
         item=item,
@@ -112,8 +97,6 @@ def mostrar_formulario(item, errores, titulo):
         errores=errores,
         titulo=titulo
     )
-
-
 
 
 @bp.route("/")
@@ -132,13 +115,10 @@ def listar():
         ORDER BY pr.id_presentacion
     """)
 
-
     return render_template(
         "presentaciones/list.html",
         presentaciones=presentaciones
     )
-
-
 
 
 @bp.route("/nuevo", methods=["GET", "POST"])
@@ -151,10 +131,8 @@ def crear():
     }
     errores = []
 
-
     if request.method == "POST":
         item, datos, errores = leer_formulario(request.form)
-
 
         if not errores:
             try:
@@ -171,18 +149,13 @@ def crear():
                     datos
                 )
 
-
                 flash("Presentación creada correctamente.", "success")
                 return redirect(url_for("presentaciones.listar"))
-
 
             except DatabaseError as exc:
                 errores.append(error_message(exc))
 
-
     return mostrar_formulario(item, errores, "Nueva presentación")
-
-
 
 
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
@@ -193,46 +166,98 @@ def editar(id):
         one=True
     )
 
-
     if item is None:
         abort(404)
 
-
     errores = []
-
 
     if request.method == "POST":
         item, datos, errores = leer_formulario(request.form)
 
-
         if not errores:
             try:
-                execute(
-                    """
-                    UPDATE presentacion
-                    SET id_producto = %s,
-                        tipo_presentacion = %s,
-                        unidades_por_presentacion = %s,
-                        precio_venta = %s
-                    WHERE id_presentacion = %s
-                    """,
-                    datos + (id,)
-                )
+                with transaction() as cursor:
+                    # Bloquea la presentación mientras se revisa y actualiza.
+                    cursor.execute(
+                        """
+                        SELECT
+                            id_producto,
+                            tipo_presentacion,
+                            unidades_por_presentacion
+                        FROM presentacion
+                        WHERE id_presentacion = %s
+                        FOR UPDATE
+                        """,
+                        (id,)
+                    )
 
+                    anterior = cursor.fetchone()
+
+                    if anterior is None:
+                        abort(404)
+
+                    # Los primeros tres valores corresponden a:
+                    # producto, tipo y unidades por presentación.
+                    cambia_presentacion = datos[:3] != anterior
+
+                    if cambia_presentacion:
+                        cursor.execute(
+                            """
+                            SELECT
+                                EXISTS (
+                                    SELECT 1
+                                    FROM detalle_surtido
+                                    WHERE id_presentacion = %s
+                                )
+                                OR EXISTS (
+                                    SELECT 1
+                                    FROM detalle_venta
+                                    WHERE id_presentacion = %s
+                                )
+                            """,
+                            (id, id)
+                        )
+
+                        tiene_movimientos = cursor.fetchone()[0]
+
+                        if tiene_movimientos:
+                            raise ValueError(
+                                "Esta presentación ya tiene entradas o ventas. "
+                                "Solo puede actualizar su precio de venta. "
+                                "Para cambiar el producto, el tipo o las "
+                                "unidades, cree una nueva presentación."
+                            )
+
+                    cursor.execute(
+                        """
+                        UPDATE presentacion
+                        SET id_producto = %s,
+                            tipo_presentacion = %s,
+                            unidades_por_presentacion = %s,
+                            precio_venta = %s
+                        WHERE id_presentacion = %s
+                        """,
+                        datos + (id,)
+                    )
 
                 flash(
                     "Presentación actualizada correctamente.",
                     "success"
                 )
-                return redirect(url_for("presentaciones.listar"))
 
+                return redirect(url_for("presentaciones.listar"))
 
             except DatabaseError as exc:
                 errores.append(error_message(exc))
 
+            except ValueError as exc:
+                errores.append(str(exc))
 
-    return mostrar_formulario(item, errores, "Editar presentación")
-
+    return mostrar_formulario(
+        item,
+        errores,
+        "Editar presentación"
+    )
 
 @bp.route("/<int:id>/eliminar", methods=["POST"])
 def eliminar(id):
@@ -242,15 +267,12 @@ def eliminar(id):
             (id,)
         )
 
-
         if filas:
             flash("Presentación eliminada correctamente.", "success")
         else:
             flash("La presentación ya no existe.", "warning")
 
-
     except DatabaseError as exc:
         flash(error_message(exc), "danger")
-
 
     return redirect(url_for("presentaciones.listar"))

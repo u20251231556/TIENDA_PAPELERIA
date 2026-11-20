@@ -252,7 +252,7 @@ def crear():
                             SET cantidad_disponible =
                                 cantidad_disponible - %s
                             WHERE id_producto = %s
-                              AND cantidad_disponible >= %s
+                            AND cantidad_disponible >= %s
                             RETURNING id_inventario
                             """,
                             (unidades, id_producto, unidades)
@@ -293,7 +293,6 @@ def crear():
                     id_venta=id_venta
                 ))
 
-
             except DatabaseError as exc:
                 errores.append(error_message(exc))
             except ValueError as exc:
@@ -321,7 +320,7 @@ def crear():
         JOIN marca m ON m.id_marca = p.id_marca
         LEFT JOIN inventario i ON i.id_producto = p.id_producto
         ORDER BY p.nombre_producto, m.nombre_marca,
-                 pr.unidades_por_presentacion
+                pr.unidades_por_presentacion
     """)
 
     return render_template(
@@ -333,92 +332,4 @@ def crear():
         errores=errores,
         titulo="Nueva venta"
     )
-
-
-@bp.route("/<int:id>/eliminar", methods=["POST"])
-def eliminar(id):
-    try:
-        with transaction() as cursor:
-            cursor.execute(
-                """
-                SELECT id_venta
-                FROM venta
-                WHERE id_venta = %s
-                FOR UPDATE
-                """,
-                (id,)
-            )
-
-            if cursor.fetchone() is None:
-                raise ValueError("La venta ya no existe.")
-
-            cursor.execute(
-                """
-                SELECT
-                    d.cantidad,
-                    pr.id_producto,
-                    pr.unidades_por_presentacion
-                FROM detalle_venta d
-                JOIN presentacion pr
-                    ON pr.id_presentacion = d.id_presentacion
-                WHERE d.id_venta = %s
-                ORDER BY d.id_detalle_venta
-                FOR UPDATE OF d
-                FOR SHARE OF pr
-                """,
-                (id,)
-            )
-
-            unidades_por_producto = {}
-
-            for cantidad, id_producto, unidades in cursor.fetchall():
-                unidades_por_producto[id_producto] = (
-                    unidades_por_producto.get(id_producto, 0)
-                    + cantidad * unidades
-                )
-
-            for id_producto in sorted(unidades_por_producto):
-                unidades = unidades_por_producto[id_producto]
-
-                cursor.execute(
-                    """
-                    UPDATE inventario
-                    SET cantidad_disponible =
-                        cantidad_disponible::bigint + %s
-                    WHERE id_producto = %s
-                      AND cantidad_disponible::bigint + %s
-                          <= 2147483647
-                    RETURNING id_inventario
-                    """,
-                    (unidades, id_producto, unidades)
-                )
-
-                if cursor.fetchone() is None:
-                    raise ValueError(
-                        "No se puede devolver la mercancía: "
-                        "falta su registro de inventario o "
-                        "las existencias superarían el límite permitido."
-                    )
-
-            cursor.execute(
-                "DELETE FROM detalle_venta WHERE id_venta = %s",
-                (id,)
-            )
-
-            cursor.execute(
-                "DELETE FROM venta WHERE id_venta = %s",
-                (id,)
-            )
-
-        flash(
-            "Venta eliminada y unidades devueltas al inventario.",
-            "success"
-        )
-
-    except DatabaseError as exc:
-        flash(error_message(exc), "danger")
-    except ValueError as exc:
-        flash(str(exc), "danger")
-
-    return redirect(url_for("venta.listar"))
 

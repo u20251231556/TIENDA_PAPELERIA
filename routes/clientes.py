@@ -1,16 +1,12 @@
 import re
 
-
 from flask import (
     Blueprint, render_template, request,
     redirect, url_for, flash, abort
 )
 from db import query, execute, DatabaseError, error_message
 
-
 bp = Blueprint("clientes", __name__, url_prefix="/clientes")
-
-
 
 
 @bp.route("/")
@@ -26,13 +22,10 @@ def listar():
         ORDER BY id_cliente
     """)
 
-
     return render_template(
         "clientes/list.html",
         clientes=clientes
     )
-
-
 
 
 @bp.route("/nuevo", methods=["GET", "POST"])
@@ -45,35 +38,29 @@ def crear():
     }
     errores = []
 
-
     if request.method == "POST":
         item = {
             "nombre_cliente": request.form.get(
                 "nombre_cliente", ""
             ).strip().upper(),
 
-
             "identificacion": request.form.get(
                 "identificacion", ""
             ).strip().upper(),
 
-
             "telefono": request.form.get(
                 "telefono", ""
             ).strip(),
-
 
             "correo_electronico": request.form.get(
                 "correo_electronico", ""
             ).strip().lower()
         }
 
-
         if not item["nombre_cliente"]:
             errores.append("El nombre del cliente es obligatorio.")
         elif len(item["nombre_cliente"]) > 100:
             errores.append("El nombre admite máximo 100 caracteres.")
-
 
         if not item["identificacion"]:
             errores.append("La identificación es obligatoria.")
@@ -84,9 +71,7 @@ def crear():
         elif not item["identificacion"].strip():
             errores.append("La identificación es obligatoria.")
 
-
         telefono = item["telefono"]
-
 
         if telefono and not re.fullmatch(r"\+?[0-9]{7,15}", telefono):
             errores.append(
@@ -94,9 +79,7 @@ def crear():
                 "sin espacios ni guiones. Puede comenzar con +."
             )
 
-
         correo = item["correo_electronico"]
-
 
         if len(correo) > 100:
             errores.append("El correo admite máximo 100 caracteres.")
@@ -104,7 +87,6 @@ def crear():
             r"[^@\s]+@[^@\s]+\.[^@\s]+", correo
         ):
             errores.append("Ingrese un correo electrónico válido.")
-
 
         if not errores:
             try:
@@ -126,14 +108,11 @@ def crear():
                     )
                 )
 
-
                 flash("Cliente creado correctamente.", "success")
                 return redirect(url_for("clientes.listar"))
 
-
             except DatabaseError as exc:
                 errores.append(error_message(exc))
-
 
     return render_template(
         "clientes/form.html",
@@ -141,7 +120,6 @@ def crear():
         errores=errores,
         titulo="Nuevo cliente"
     )
-
 
 @bp.route("/<int:id>/editar", methods=["GET", "POST"])
 def editar(id):
@@ -151,13 +129,10 @@ def editar(id):
         one=True
     )
 
-
     if item is None:
         abort(404)
 
-
     errores = []
-
 
     if request.method == "POST":
         item = {
@@ -165,28 +140,23 @@ def editar(id):
                 "nombre_cliente", ""
             ).strip().upper(),
 
-
             "identificacion": request.form.get(
                 "identificacion", ""
             ).strip().upper(),
 
-
             "telefono": request.form.get(
                 "telefono", ""
             ).strip(),
-
 
             "correo_electronico": request.form.get(
                 "correo_electronico", ""
             ).strip().lower()
         }
 
-
         if not item["nombre_cliente"]:
             errores.append("El nombre del cliente es obligatorio.")
         elif len(item["nombre_cliente"]) > 100:
             errores.append("El nombre admite máximo 100 caracteres.")
-
 
         if not item["identificacion"]:
             errores.append("La identificación es obligatoria.")
@@ -195,9 +165,7 @@ def editar(id):
                 "La identificación admite máximo 30 caracteres."
             )
 
-
         telefono = item["telefono"]
-
 
         if telefono and not re.fullmatch(r"\+?[0-9]{7,15}", telefono):
             errores.append(
@@ -205,9 +173,7 @@ def editar(id):
                 "sin espacios ni guiones. Puede comenzar con +."
             )
 
-
         correo = item["correo_electronico"]
-
 
         if len(correo) > 100:
             errores.append("El correo admite máximo 100 caracteres.")
@@ -215,7 +181,6 @@ def editar(id):
             r"[^@\s]+@[^@\s]+\.[^@\s]+", correo
         ):
             errores.append("Ingrese un correo electrónico válido.")
-
 
         if not errores:
             try:
@@ -237,14 +202,11 @@ def editar(id):
                     )
                 )
 
-
                 flash("Cliente actualizado correctamente.", "success")
                 return redirect(url_for("clientes.listar"))
 
-
             except DatabaseError as exc:
                 errores.append(error_message(exc))
-
 
     return render_template(
         "clientes/form.html",
